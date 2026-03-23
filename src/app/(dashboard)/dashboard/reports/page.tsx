@@ -9,5 +9,11 @@ export default async function ReportsPage() {
     .select('id, title_en, status, day1_date, city:cities(name_en)')
     .in('status', ['in_progress', 'completed'])
     .order('day1_date', { ascending: false })
-  return <ReportsClient courses={courses ?? []} />
+
+  const safeCourses = (courses ?? []).map((c: any) => ({
+    ...c,
+    city: Array.isArray(c.city) ? c.city[0] : c.city,
+  }))
+
+  return <ReportsClient courses={safeCourses} />
 }
