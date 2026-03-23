@@ -33,7 +33,7 @@ async function generatePDF(trainee: any, course: any, verificationCode: string):
   page.drawRectangle({ x: 48, y: 40, width: 4, height: height - 80, color: rgb(0.07, 0.07, 0.07) })
 
   // Header
-  page.drawText('SOL FOR BUSINESS SOLUTION', { x: 72, y: height - 72, size: 11, font: fontBold, color: rgb(0.07, 0.07, 0.07), letterSpacing: 2 })
+  page.drawText('SOL FOR BUSINESS SOLUTION', { x: 72, y: height - 72, size: 11, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
   page.drawText('CERTIFICATE OF COMPLETION', { x: 72, y: height - 120, size: 28, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
   page.drawText('شهادة إتمام الدورة التدريبية', { x: 72, y: height - 150, size: 14, font: fontRegular, color: rgb(0.45, 0.45, 0.45) })
 
@@ -66,8 +66,8 @@ async function generatePDF(trainee: any, course: any, verificationCode: string):
 
   // Verification
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://sol-ops.vercel.app'
-  page.drawText('VERIFICATION CODE', { x: 72, y: 78, size: 8, font: fontBold, color: rgb(0.6, 0.6, 0.6), letterSpacing: 1.5 })
-  page.drawText(verificationCode, { x: 72, y: 58, size: 13, font: fontBold, color: rgb(0.07, 0.07, 0.07), letterSpacing: 2 })
+  page.drawText('VERIFICATION CODE', { x: 72, y: 78, size: 8, font: fontBold, color: rgb(0.6, 0.6, 0.6) })
+  page.drawText(verificationCode, { x: 72, y: 58, size: 13, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
   page.drawText(`Verify at: ${appUrl}/verify/${verificationCode}`, { x: 72, y: 38, size: 9, font: fontRegular, color: rgb(0.6, 0.6, 0.6) })
 
   // Signature
