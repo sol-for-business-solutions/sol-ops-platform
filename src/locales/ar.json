@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "courses": "الدورات",
+    "checklists": "قوائم المهام",
+    "flags": "التنبيهات",
+    "checkins": "تسجيل الحضور",
+    "attendance": "الحضور",
+    "certificates": "الشهادات",
+    "reports": "التقارير",
+    "users": "المستخدمون",
+    "settings": "الإعدادات"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "back": "رجوع",
+    "loading": "جارٍ التحميل...",
+    "saving": "جارٍ الحفظ...",
+    "search": "بحث",
+    "all": "الكل",
+    "yes": "نعم",
+    "no": "لا",
+    "required": "مطلوب",
+    "optional": "اختياري"
+  },
+  "status": {
+    "draft": "مسودة",
+    "scheduled": "مجدولة",
+    "in_progress": "جارية",
+    "completed": "مكتملة",
+    "archived": "مؤرشفة"
+  },
+  "severity": {
+    "info": "معلومة",
+    "warning": "تحذير",
+    "critical": "حرجة",
+    "emergency": "طارئة"
+  },
+  "flags": {
+    "raise": "رفع تنبيه",
+    "noFlags": "لا توجد تنبيهات",
+    "openFlags": "تنبيهات مفتوحة",
+    "resolvedBy": "تم الحل بواسطة"
+  },
+  "checklist": {
+    "prePhase": "ما قبل الدورة",
+    "duringPhase": "أثناء الدورة",
+    "postPhase": "ما بعد الدورة",
+    "completion": "نسبة الإنجاز الكلية",
+    "uploadPhoto": "رفع صورة دليل",
+    "requiredPhoto": "مطلوب"
+  },
+  "attendance": {
+    "present": "حاضر",
+    "absent": "غائب",
+    "eligible": "مؤهل للشهادة",
+    "sessions": "جلسات",
+    "markAll": "تحديد الكل حضور",
+    "addTrainee": "إضافة متدرب",
+    "totalTrainees": "إجمالي المتدربين",
+    "eligible2": "مؤهلون للشهادة",
+    "generateCerts": "إنشاء الشهادات"
+  },
+  "checkin": {
+    "checkIn": "تسجيل الدخول",
+    "checkOut": "تسجيل الخروج",
+    "today": "اليوم",
+    "venueRadius": "نطاق التحقق بنظام GPS: 500 متر",
+    "verified": "تم التحقق من تسجيل الدخول بنجاح",
+    "outsideRadius": "الموقع خارج نطاق المكان"
+  },
+  "auth": {
+    "signIn": "تسجيل الدخول",
+    "signingIn": "جارٍ تسجيل الدخول...",
+    "signOut": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة. حاول مرة أخرى."
+  }
+}

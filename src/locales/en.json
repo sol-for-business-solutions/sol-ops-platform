@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "checklists": "Checklists",
+    "flags": "Flags",
+    "checkins": "Check-in",
+    "attendance": "Attendance",
+    "certificates": "Certificates",
+    "reports": "Reports",
+    "users": "Users",
+    "settings": "Settings"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "search": "Search",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "status": {
+    "draft": "Draft",
+    "scheduled": "Scheduled",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "archived": "Archived"
+  },
+  "severity": {
+    "info": "Info",
+    "warning": "Warning",
+    "critical": "Critical",
+    "emergency": "Emergency"
+  },
+  "flags": {
+    "raise": "Raise Flag",
+    "noFlags": "No flags found",
+    "openFlags": "open flags",
+    "resolvedBy": "Resolved by"
+  },
+  "checklist": {
+    "prePhase": "Pre-course",
+    "duringPhase": "During course",
+    "postPhase": "Post-course",
+    "completion": "Overall completion",
+    "uploadPhoto": "Upload photo evidence",
+    "requiredPhoto": "required"
+  },
+  "attendance": {
+    "present": "Present",
+    "absent": "Absent",
+    "eligible": "Eligible for certificate",
+    "sessions": "sessions",
+    "markAll": "Mark all present",
+    "addTrainee": "Add trainee",
+    "totalTrainees": "Total trainees",
+    "eligible2": "Cert. eligible",
+    "generateCerts": "Generate certificates"
+  },
+  "checkin": {
+    "checkIn": "Check in",
+    "checkOut": "Check out",
+    "today": "Today",
+    "venueRadius": "GPS validation radius: 500 meters",
+    "verified": "Check-in verified successfully",
+    "outsideRadius": "Location outside venue radius"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "signOut": "Sign out",
+    "email": "Email address",
+    "password": "Password",
+    "invalidCredentials": "Invalid email or password. Please try again."
+  }
+}

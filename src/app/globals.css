@@ -1,26 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=IBM+Plex+Arabic:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+@plugin "@tailwindcss/forms";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --sol-navy:    #142680;
+  --sol-blue:    #2B35FF;
+  --sol-cyan:    #89e3fd;
+  --sol-gray:    #e8e8e8;
+  --sol-dark:    #10120f;
+  --sol-gradient: linear-gradient(135deg, #142680 0%, #1e3aaa 40%, #2B35FF 100%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Montserrat', 'Segoe UI', sans-serif;
+  background: #f5f6fa;
+  color: #10120f;
 }
+
+[dir="rtl"] body, [dir="rtl"] * {
+  font-family: 'IBM Plex Arabic', 'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif;
+}
+[dir="rtl"] input[type="number"],
+[dir="rtl"] input[type="tel"],
+[dir="rtl"] input[type="email"] { direction: ltr; text-align: left; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c5cae9; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #142680; }
+
+.sol-btn-primary {
+  background: var(--sol-gradient);
+  color: white;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(20,38,128,0.3);
+}
+.sol-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(43,53,255,0.4);
+  transform: translateY(-1px);
+}
+
+.sol-card {
+  background: white;
+  border: 1px solid #e8edf5;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.sol-card:hover { border-color: #c5cae9; box-shadow: 0 4px 20px rgba(20,38,128,0.08); }
+
+.stat-card-accent { border-top: 3px solid; }

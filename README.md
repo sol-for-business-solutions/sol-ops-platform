@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SOL Operations Excellence Platform
 
-## Getting Started
+## Setup
 
-First, run the development server:
-
+1. **Install dependencies:**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Environment variables** — copy `.env.local.example` → `.env.local` and fill in:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+RESEND_API_KEY=your_resend_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Run the dev server:**
+```bash
+npm run dev
+```
+App runs at http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## THE FIX — Why it was broken
+The file was named `proxy.ts` instead of `middleware.ts`, AND it was missing the URL + KEY arguments to `createServerClient`. Both are now fixed:
+- File: `src/middleware.ts` (not proxy.ts)
+- Function name: `middleware` (not proxy)
+- `createServerClient(URL, KEY, { cookies })` — all 3 args present
 
-## Learn More
+## To update your existing project
+1. Replace your `src/` folder entirely with the one from this zip
+2. Delete `src/proxy.ts` if it still exists
+3. Make sure `src/middleware.ts` exists (it's included here)
+4. Run `npm install next@14.2.0 eslint-config-next@14.2.0` to pin stable Next.js
 
-To learn more about Next.js, take a look at the following resources:
+## Storage buckets to create in Supabase
+- `checklist-photos` (public)
+- `certificates` (public)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Supabase Storage CORS
+In Supabase Dashboard → Storage → Settings, allow your app URL.
