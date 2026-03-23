@@ -28,7 +28,7 @@ export function AttendanceTable({ trainees, session, saving, canEdit, isPresent,
                 <div className="shrink-0">{present ? <CheckCircle2 size={22} className="text-green-500" /> : <Circle size={22} className="text-gray-200" />}</div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2"><p className="text-sm font-medium text-gray-900 truncate">{trainee.full_name_en}</p>{eligible && <Award size={13} className="text-amber-500 shrink-0" title="Eligible for certificate" />}</div>
+                <div className="flex items-center gap-2"><p className="text-sm font-medium text-gray-900 truncate">{trainee.full_name_en}</p>{eligible && <span title="Eligible for certificate"><Award size={13} className="text-amber-500 shrink-0" /></span>}</div>
                 <p className="text-xs text-gray-400" dir="rtl">{trainee.full_name_ar}</p>
               </div>
               <div className="shrink-0 text-right">
