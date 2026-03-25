@@ -81,7 +81,7 @@ export async function GET(request: Request) {
   const cardW = (W - 48 - 10 * 5) / 6
   cards.forEach((card, i) => {
     const cx = 24 + i * (cardW + 10)
-    p1.drawRectangle({ x: cx, y: y - 50, width: cardW, height: 50, color: rgb(0.97, 0.97, 1), borderColor: rgb(0.85, 0.88, 1), borderWidth: 0.5, borderRadius: 4 })
+    p1.drawRectangle({ x: cx, y: y - 50, width: cardW, height: 50, color: rgb(0.97, 0.97, 1), borderColor: rgb(0.85, 0.88, 1), borderWidth: 0.5 })
     p1.drawText(card.value, { x: cx + cardW / 2 - (card.value.length * 6), y: y - 22, size: 18, font: fontBold, color: rgb(0.08, 0.15, 0.5) })
     p1.drawText(card.label, { x: cx + 6, y: y - 42, size: 7, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
   })
