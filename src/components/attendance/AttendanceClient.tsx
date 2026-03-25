@@ -22,9 +22,22 @@ export function AttendanceClient({ courses, initialCourseId, role }: Props) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [genResult, setGenResult] = useState<any>(null)
+  const [notifying, setNotifying] = useState(false)
+  const [notifyResult, setNotifyResult] = useState<any>(null)
   const { trainees, loading, saving, isPresent, getSessionCount, isEligible, markAttendance, markAllPresent, totalTrainees, eligibleCount, sessionStats, refetch } = useAttendance(selectedId)
   const canEdit = ['super_admin', 'manager', 'coordinator'].includes(role)
   const canGenCert = ['super_admin', 'manager'].includes(role)
+  const isMorningSess = activeSession === 'day1_am' || activeSession === 'day2_am'
+
+  async function notifyAbsent() {
+    setNotifying(true); setNotifyResult(null)
+    const res = await fetch('/api/attendance/absent-notify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ course_id: selectedId, session: activeSession }),
+    })
+    setNotifyResult(await res.json()); setNotifying(false)
+  }
+
   async function generateCertificates() {
     setGenerating(true); setGenResult(null)
     const res = await fetch('/api/certificates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course_id: selectedId }) })
@@ -81,16 +94,31 @@ export function AttendanceClient({ courses, initialCourseId, role }: Props) {
                   <AttendanceTable trainees={trainees} session={activeSession} saving={saving} canEdit={canEdit} isPresent={isPresent} getSessionCount={getSessionCount} isEligible={isEligible} onMark={markAttendance} onMarkAll={() => markAllPresent(activeSession)} />
                 )}
                 {canGenCert && trainees.length > 0 && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-5">
-                    <div className="flex items-center justify-between">
-                      <div><p className="text-sm font-semibold text-gray-900">Generate certificates</p><p className="text-xs text-gray-400 mt-0.5">{eligibleCount} of {totalTrainees} trainees are eligible (3+ sessions attended)</p></div>
-                      <button onClick={generateCertificates} disabled={generating || eligibleCount === 0} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-40">
-                        {generating ? <><Spinner size="sm" /> Generating...</> : <><Award size={15} /> Generate all</>}
-                      </button>
+                  <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Generate certificates</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{eligibleCount} of {totalTrainees} trainees eligible (3+ sessions)</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {isMorningSess && (
+                          <button onClick={notifyAbsent} disabled={notifying} className="flex items-center gap-2 border border-gray-200 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40">
+                            {notifying ? 'Sending…' : '📩 SMS absent'}
+                          </button>
+                        )}
+                        <button onClick={generateCertificates} disabled={generating || eligibleCount === 0} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-40">
+                          {generating ? <><Spinner size="sm" /> Generating...</> : <><Award size={15} /> Generate all</>}
+                        </button>
+                      </div>
                     </div>
+                    {notifyResult && (
+                      <div className={`p-3 rounded-lg text-sm ${notifyResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+                        {notifyResult.error ? notifyResult.error : `📩 SMS sent to ${notifyResult.notified} absent trainee${notifyResult.notified !== 1 ? 's' : ''} out of ${notifyResult.total_absent} absent`}
+                      </div>
+                    )}
                     {genResult && (
-                      <div className={`mt-4 p-3 rounded-lg text-sm ${genResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-                        {genResult.error ? genResult.error : `✓ Generated ${genResult.generated} certificate${genResult.generated !== 1 ? 's' : ''}${genResult.skipped > 0 ? ` · ${genResult.skipped} already existed` : ''} · Emails sent to eligible trainees`}
+                      <div className={`p-3 rounded-lg text-sm ${genResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+                        {genResult.error ? genResult.error : `✓ Generated ${genResult.generated} certificate${genResult.generated !== 1 ? 's' : ''}${genResult.skipped > 0 ? ` · ${genResult.skipped} already existed` : ''}${genResult.errors?.length > 0 ? ` · ${genResult.errors.length} upload errors` : ''}`}
                       </div>
                     )}
                   </div>

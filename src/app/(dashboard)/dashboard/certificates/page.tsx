@@ -2,14 +2,17 @@ import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/auth'
 import Link from 'next/link'
 import { ExternalLink, Award } from 'lucide-react'
+import { RegenerateCertButton } from './RegenerateCertButton'
 
 export default async function CertificatesPage() {
   const supabase = await createClient()
-  await getProfile()
+  const profile = await getProfile()
   const { data: certs } = await supabase.from('certificates')
-    .select('*, trainee:trainees(full_name_en, full_name_ar), course:courses(title_en, day1_date, city:cities(name_en))')
+    .select('*, trainee:trainees(full_name_en, full_name_ar, email), course:courses(title_en, day1_date, city:cities(name_en))')
     .order('generated_at', { ascending: false })
-    .limit(100)
+    .limit(200)
+
+  const canRegen = ['super_admin', 'manager'].includes(profile?.role ?? '')
 
   function formatDate(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -32,17 +35,19 @@ export default async function CertificatesPage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
-            <div className="grid grid-cols-5 gap-4 px-4 py-3 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <div className={`grid gap-4 px-4 py-3 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide ${canRegen ? 'grid-cols-6' : 'grid-cols-5'}`}>
               <div className="col-span-2">Trainee</div>
               <div>Course</div>
               <div>Issued</div>
+              <div>Ver.</div>
               <div>Actions</div>
             </div>
             {certs.map((cert: any) => (
-              <div key={cert.id} className="grid grid-cols-5 gap-4 px-4 py-3 items-center hover:bg-gray-50 transition-colors">
+              <div key={cert.id} className={`grid gap-4 px-4 py-3 items-center hover:bg-gray-50 transition-colors ${canRegen ? 'grid-cols-6' : 'grid-cols-5'}`}>
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-gray-900">{cert.trainee?.full_name_en}</p>
                   <p className="text-xs text-gray-400" dir="rtl">{cert.trainee?.full_name_ar}</p>
+                  {cert.trainee?.email && <p className="text-xs text-gray-400 truncate">{cert.trainee.email}</p>}
                 </div>
                 <div>
                   <p className="text-sm text-gray-700 line-clamp-1">{cert.course?.title_en}</p>
@@ -52,7 +57,10 @@ export default async function CertificatesPage() {
                   <p className="text-sm text-gray-700">{formatDate(cert.generated_at)}</p>
                   <p className="font-mono text-xs text-gray-400">{cert.verification_code}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div>
+                  <span className="text-xs text-gray-500">v{cert.version ?? 1}</span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
                   {cert.pdf_url && (
                     <a href={cert.pdf_url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 transition-colors">
@@ -63,6 +71,7 @@ export default async function CertificatesPage() {
                     className="text-xs text-blue-600 hover:text-blue-800 transition-colors">
                     Verify
                   </Link>
+                  {canRegen && <RegenerateCertButton certId={cert.id} />}
                 </div>
               </div>
             ))}

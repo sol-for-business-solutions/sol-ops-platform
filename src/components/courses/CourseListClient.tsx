@@ -1,10 +1,11 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Plus, Search, SlidersHorizontal } from 'lucide-react'
+import { Plus, Search, SlidersHorizontal, Upload } from 'lucide-react'
 import { useCourses } from '@/hooks/useCourses'
 import { useCities } from '@/hooks/useCities'
 import { CourseCard } from './CourseCard'
+import { BulkCourseImportModal } from './BulkCourseImportModal'
 import { Spinner } from '@/components/ui/Spinner'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -18,6 +19,7 @@ export function CourseListClient({ role }: { role: string }) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [cityId, setCityId] = useState('')
+  const [showBulk, setShowBulk] = useState(false)
   const { courses, loading, refetch } = useCourses({ status: status || undefined, city_id: cityId || undefined, search: search || undefined })
   const { cities } = useCities()
   const canCreate = ['super_admin', 'manager'].includes(role)
@@ -33,14 +35,20 @@ export function CourseListClient({ role }: { role: string }) {
           <p className="text-sm text-gray-400 mt-0.5">{courses.length} course{courses.length !== 1 ? 's' : ''} found</p>
         </div>
         {canCreate && (
-          <Link href="/dashboard/courses/new"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white sol-btn-primary">
-            <Plus size={16} />New course
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowBulk(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
+              <Upload size={15} />Bulk import
+            </button>
+            <Link href="/dashboard/courses/new"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white sol-btn-primary">
+              <Plus size={16} />New course
+            </Link>
+          </div>
         )}
       </div>
 
-      {/* Filters */}
       <div className="sol-card p-4 mb-6">
         <div className="flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-48">
@@ -49,9 +57,7 @@ export function CourseListClient({ role }: { role: string }) {
               className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 bg-gray-50"
               style={{border:'1px solid #e8edf5','--tw-ring-color':'#142680'} as React.CSSProperties} />
           </div>
-          <div className="flex items-center gap-1 text-gray-400">
-            <SlidersHorizontal size={15} />
-          </div>
+          <div className="flex items-center gap-1 text-gray-400"><SlidersHorizontal size={15} /></div>
           <select value={status} onChange={e => setStatus(e.target.value)} className={selectClass} style={selectStyle}>
             {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -72,6 +78,8 @@ export function CourseListClient({ role }: { role: string }) {
           {courses.map(course => <CourseCard key={course.id} course={course} role={role} onUpdate={refetch} />)}
         </div>
       )}
+
+      {showBulk && <BulkCourseImportModal onClose={() => setShowBulk(false)} onSuccess={() => { setShowBulk(false); refetch() }} />}
     </div>
   )
 }

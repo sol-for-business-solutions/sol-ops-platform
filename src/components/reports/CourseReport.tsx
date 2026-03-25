@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { Spinner } from '@/components/ui/Spinner'
-import { Download, Users, Flag, CheckSquare, Award } from 'lucide-react'
+import { Download, Users, Flag, CheckSquare, Award, FileText } from 'lucide-react'
 
 interface Props { courseId: string }
 
@@ -9,6 +9,7 @@ export function CourseReport({ courseId }: Props) {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
+  const [exportingPdf, setExportingPdf] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -29,6 +30,23 @@ export function CourseReport({ courseId }: Props) {
     setExporting(false)
   }
 
+  async function exportPdf() {
+    setExportingPdf(true)
+    try {
+      const res = await fetch(`/api/reports/pdf?course_id=${courseId}`)
+      if (!res.ok) { setExportingPdf(false); return }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `SOL-Report-${data.course.title_en.replace(/\s+/g, '-')}-${data.course.day1_date}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
   if (loading) return <div className="flex justify-center py-16"><Spinner /></div>
   if (!data || data.error) return <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-sm text-red-700">{data?.error ?? 'Failed to load report'}</div>
 
@@ -43,8 +61,18 @@ export function CourseReport({ courseId }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div><p className="text-sm font-semibold text-gray-900">{data.course.title_en}</p><p className="text-xs text-gray-400">{data.course.city?.name_en} · Trainer: {data.course.trainer_name}</p></div>
-        <button onClick={exportExcel} disabled={exporting} className="flex items-center gap-2 border border-gray-200 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"><Download size={14} />{exporting ? 'Exporting...' : 'Export Excel'}</button>
+        <div>
+          <p className="text-sm font-semibold text-gray-900">{data.course.title_en}</p>
+          <p className="text-xs text-gray-400">{data.course.city?.name_en} · Trainer: {data.course.trainer_name}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={exportPdf} disabled={exportingPdf} className="flex items-center gap-2 border border-gray-200 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+            <FileText size={14} />{exportingPdf ? 'Exporting…' : 'Export PDF'}
+          </button>
+          <button onClick={exportExcel} disabled={exporting} className="flex items-center gap-2 border border-gray-200 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+            <Download size={14} />{exporting ? 'Exporting…' : 'Export Excel'}
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {statCards.map(card => (
@@ -80,9 +108,10 @@ export function CourseReport({ courseId }: Props) {
           <div className="divide-y divide-gray-50">
             {data.flags.map((f: any) => {
               const sevColor: Record<string, string> = { emergency: 'text-red-600', critical: 'text-orange-600', warning: 'text-amber-600', info: 'text-blue-600' }
+              const dotColor: Record<string, string> = { emergency: 'bg-red-500', critical: 'bg-orange-500', warning: 'bg-amber-500', info: 'bg-blue-500' }
               return (
                 <div key={f.id} className="px-4 py-3 flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-current" style={{ color: sevColor[f.severity] ? undefined : '#888' }} />
+                  <div className={`w-1.5 h-1.5 rounded-full mt-2 shrink-0 ${dotColor[f.severity] ?? 'bg-gray-400'}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2"><span className={`text-xs font-semibold capitalize ${sevColor[f.severity] ?? 'text-gray-600'}`}>{f.severity}</span><span className="text-xs text-gray-400">{f.status}</span></div>
                     <p className="text-sm text-gray-700 truncate">{f.description}</p>

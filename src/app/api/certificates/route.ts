@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
@@ -122,36 +123,73 @@ export async function POST(request: Request) {
   }
 
   let generated = 0; let skipped = 0
+  const errors: { trainee: string; error: string }[] = []
+  const adminClient = createAdminClient()
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://sol-ops.vercel.app'
 
   for (const trainee of eligible) {
     const { data: existing } = await supabase.from('certificates')
       .select('id').eq('trainee_id', trainee.id).eq('course_id', course_id).single()
     if (existing) { skipped++; continue }
 
-    const verificationCode = generateCode()
-    const pdfBuffer = await generatePDF(trainee, course, verificationCode)
-    const fileName = `${course_id}/${trainee.id}-v1.pdf`
+    try {
+      const verificationCode = generateCode()
+      const pdfBuffer = await generatePDF(trainee, course, verificationCode)
+      const fileName = `${course_id}/${trainee.id}-v1.pdf`
 
-    const { error: uploadError } = await supabase.storage
-      .from('certificates')
-      .upload(fileName, pdfBuffer, { contentType: 'application/pdf', upsert: true })
-    if (uploadError) continue
+      const { error: uploadError } = await adminClient.storage
+        .from('certificates')
+        .upload(fileName, pdfBuffer, { contentType: 'application/pdf', upsert: true })
 
-    const { data: urlData } = supabase.storage.from('certificates').getPublicUrl(fileName)
-    await supabase.from('certificates').insert({
-      trainee_id: trainee.id, course_id,
-      pdf_url: urlData.publicUrl,
-      verification_code: verificationCode,
-      generated_by: user.id,
-    })
-    generated++
+      if (uploadError) {
+        console.error('Certificate upload error for', trainee.full_name_en, uploadError)
+        errors.push({ trainee: trainee.full_name_en, error: uploadError.message })
+        continue
+      }
+
+      const { data: urlData } = adminClient.storage.from('certificates').getPublicUrl(fileName)
+      const { data: cert } = await supabase.from('certificates').insert({
+        trainee_id: trainee.id, course_id,
+        pdf_url: urlData.publicUrl,
+        verification_code: verificationCode,
+        generated_by: user.id,
+      }).select().single()
+
+      // FR-606: Send certificate via email if trainee has email
+      if (trainee.email && cert && process.env.RESEND_API_KEY) {
+        fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'SOL Operations <certificates@sol.sa>',
+            to: [trainee.email],
+            subject: `Your Certificate — ${course.title_en}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+              <h2 style="color:#142680">Certificate of Completion</h2>
+              <p>Dear ${trainee.full_name_en},</p>
+              <p>Congratulations on successfully completing <strong>${course.title_en}</strong>.</p>
+              <p>Your certificate is ready. You can verify it at any time using the link below:</p>
+              <p><a href="${appUrl}/verify/${verificationCode}" style="background:#142680;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">Verify Certificate →</a></p>
+              <p style="color:#999;font-size:12px;margin-top:24px">Verification Code: ${verificationCode}</p>
+              <p style="color:#999;font-size:12px">SOL For Business Solution</p>
+            </div>`,
+            attachments: cert.pdf_url ? [{ filename: `certificate-${verificationCode}.pdf`, path: cert.pdf_url }] : [],
+          }),
+        }).catch(() => {})
+      }
+
+      generated++
+    } catch (err: any) {
+      console.error('Certificate generation error for', trainee.full_name_en, err)
+      errors.push({ trainee: trainee.full_name_en, error: err.message ?? 'Unknown error' })
+    }
   }
 
   await supabase.from('audit_log').insert({
     user_id: user.id, action: 'CERTIFICATES_GENERATED',
     table_name: 'certificates',
-    new_values: { course_id, generated, skipped, eligible: eligible.length, total: trainees.length }
+    new_values: { course_id, generated, skipped, errors: errors.length, eligible: eligible.length, total: trainees.length }
   })
 
-  return NextResponse.json({ generated, skipped, eligible: eligible.length, total: trainees.length })
+  return NextResponse.json({ generated, skipped, errors, eligible: eligible.length, total: trainees.length })
 }

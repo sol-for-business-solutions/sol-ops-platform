@@ -1,69 +1,90 @@
-# SOL Operations Platform — Next.js 16 Setup
+# SOL Operations Platform — Setup Guide
 
-## Quick Start
+## Prerequisites
+- Node.js 18+
+- Supabase project (run the SQL in `supabase/schema.sql`)
+- Resend account (for email notifications)
+- Unifonic account (for SMS notifications — KSA)
+
+## 1. Environment Variables
+
+Copy `.env.local` and fill in your values:
+
+```env
+# Supabase (required)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key   # needed for certificate uploads
+
+# Email — Resend (https://resend.com)
+RESEND_API_KEY=re_...
+
+# SMS — Unifonic (https://app.unifonic.com → API → App SID)
+UNIFONIC_APP_SID=your-app-sid
+UNIFONIC_SENDER_ID=SOL            # your approved Sender ID
+
+# App URL (used in certificate verification links)
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+```
+
+## 2. Supabase Storage
+
+Create two public buckets in your Supabase dashboard:
+- `certificates`   — stores generated PDF certificates
+- `checklist-photos` — stores checklist photo evidence
+
+Bucket policy (already in schema.sql): both public read, authenticated write.
+
+## 3. Supabase Edge Functions
+
+Deploy all three functions:
+```bash
+supabase functions deploy flag-escalation
+supabase functions deploy checkin-monitor
+supabase functions deploy checklist-overdue-check
+```
+
+Schedule them with pg_cron (run in Supabase SQL editor):
+```sql
+-- Flag escalation every 30 minutes
+select cron.schedule('flag-escalation', '*/30 * * * *',
+  $$select net.http_post(url:='https://your-project.supabase.co/functions/v1/flag-escalation',
+    headers:='{"Authorization":"Bearer YOUR_ANON_KEY"}'::jsonb)$$);
+
+-- Checkin monitor at 8:30 AM and 9:00 AM KSA (05:30 and 06:00 UTC)
+select cron.schedule('checkin-morning-warning', '30 5 * * *',
+  $$select net.http_post(url:='https://your-project.supabase.co/functions/v1/checkin-monitor',
+    headers:='{"Authorization":"Bearer YOUR_ANON_KEY"}'::jsonb)$$);
+
+select cron.schedule('checkin-morning-noshow', '0 6 * * *',
+  $$select net.http_post(url:='https://your-project.supabase.co/functions/v1/checkin-monitor',
+    headers:='{"Authorization":"Bearer YOUR_ANON_KEY"}'::jsonb)$$);
+```
+
+## 4. Install & Run
 
 ```bash
-# 1. Clean install
-rm -rf node_modules package-lock.json .next
 npm install
-
-# 2. Set up environment
-cp .env.local.example .env.local
-# → Edit .env.local with your Supabase credentials
-
-# 3. Run
-npm run dev
+npm run dev     # development
+npm run build   # production build
+npm start       # production server
 ```
 
-## Environment Variables (.env.local)
+## 5. First Login
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-RESEND_API_KEY=re_...   # optional, for flag email alerts
-```
+Create the first super_admin user:
+1. Sign up via `/login`
+2. In Supabase SQL editor: `update profiles set role = 'super_admin' where email = 'your@email.com';`
 
-## Supabase Storage Buckets (create once)
-In Supabase Dashboard → Storage → New bucket:
-- `checklist-photos` → Public
-- `certificates` → Public
+## New Features in v1.2
 
-## What was fixed in this version
-
-### 1. Next.js 15/16 — params & searchParams are Promises
-Every dynamic page now uses `await params` / `await searchParams`:
-```ts
-// Fixed in: courses/[id], courses/[id]/edit, verify/[code]
-//           checklists, flags, checkins, attendance
-//           API: courses/[id], flags/[id], checklists/[id], trainees/[id]
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-}
-```
-
-### 2. Tailwind v4
-- `postcss.config.mjs` → uses `@tailwindcss/postcss`
-- `globals.css` → uses `@import "tailwindcss"` + `@plugin "@tailwindcss/forms"`
-- `tailwind.config.ts` → **deleted** (not used in v4)
-
-### 3. Arabic RTL
-- Inline `<script>` in `<head>` applies `dir="rtl"` before first paint — no flash
-- Sidebar nav items flip direction and show Arabic labels
-- Topbar shows Arabic name and role when Arabic selected
-- Number/phone/email inputs stay LTR in RTL mode
-
-### 4. Certificate PDF generation
-- PDF is now generated directly in the `/api/certificates` POST route
-- No more internal HTTP fetch (which breaks on Vercel)
-- Uses `pdf-lib` — no external service needed
-
-### 5. GPS Check-in
-- Haversine distance calculated in JavaScript — no Supabase DB function needed
-- Managers/admins can check in without being assigned to the course
-
-### 6. Error boundaries
-- `not-found.tsx` for 404s
-- `error.tsx` for runtime errors
-- Dashboard-level error boundary
+| Feature | Where |
+|---|---|
+| Bulk course CSV import | Courses → "Bulk import" button |
+| Course cloning | Hover over course card → clone icon |
+| Certificate regeneration | Certificates page → "Regen" button |
+| Check-in map view | Checkins → "Map view" tab |
+| Flag analytics | Flags → "Analytics" tab |
+| PDF report export | Reports → "Export PDF" button |
+| SMS via Unifonic | Auto-triggered for Critical/Emergency flags |
+| PWA offline mode | Install via browser "Add to home screen" |

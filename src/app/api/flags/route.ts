@@ -28,8 +28,8 @@ export async function POST(request: Request) {
   if (['critical', 'emergency'].includes(severity)) {
     const { data: managers } = await supabase.from('profiles').select('id, full_name, phone, email').in('role', ['super_admin', 'manager']).eq('is_active', true)
     if (managers && managers.length > 0) {
-      const message = `${severity.toUpperCase()} flag: ${description} — ${data.course?.title_en ?? ''}`
-      try { await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/notify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ managers, message, type: 'flag' }) }) } catch {}
+      const message = `${severity.toUpperCase()} flag raised: ${description} — Course: ${data.course?.title_en ?? ''} (${data.course?.city?.name_en ?? ''})`
+      try { await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/notify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ managers, message, sms: severity === 'emergency' }) }) } catch {}
     }
   }
   await supabase.from('audit_log').insert({ user_id: user.id, action: 'FLAG_RAISED', table_name: 'flags', record_id: data.id, new_values: { severity, category, description } })
