@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, CheckSquare, Flag,
-  MapPin, Users, BarChart2, Award, Settings, Navigation
+  MapPin, Users, BarChart2, Award, Settings, Navigation, ClipboardList
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useLocale } from '@/hooks/useLocale'
@@ -19,6 +19,7 @@ const NAV = [
   { href: '/dashboard/certificates', en: 'Certificates', ar: 'الشهادات',      Icon: Award,            roles: ['super_admin','manager'] },
   { href: '/dashboard/reports',      en: 'Reports',      ar: 'التقارير',      Icon: BarChart2,        roles: ['super_admin','manager'] },
   { href: '/dashboard/users',        en: 'Users',        ar: 'المستخدمون',    Icon: Users,            roles: ['super_admin'] },
+  { href: '/dashboard/audit-log',    en: 'Audit Log',    ar: 'سجل النشاط',    Icon: ClipboardList,    roles: ['super_admin'] },
 ] as const
 
 export function Sidebar({ role }: { role: string }) {

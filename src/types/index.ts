@@ -63,3 +63,16 @@ export interface Certificate {
   verification_code: string; pdf_url: string | null
   generated_by: string; generated_at: string; version: number
 }
+
+export interface AuditLog {
+  id: string
+  user_id: string | null
+  user?: Profile
+  action: string
+  table_name: string
+  record_id: string | null
+  old_values: Record<string, any> | null
+  new_values: Record<string, any> | null
+  ip_address: string | null
+  created_at: string
+}

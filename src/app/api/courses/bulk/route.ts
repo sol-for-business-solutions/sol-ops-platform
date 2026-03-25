@@ -11,6 +11,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Only admins and managers can bulk-import courses' }, { status: 403 })
   }
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { courses } = await request.json()
   if (!Array.isArray(courses) || courses.length === 0) {
     return NextResponse.json({ error: 'courses array is required' }, { status: 400 })
@@ -84,6 +88,7 @@ export async function POST(request: Request) {
     user_id: user.id, action: 'BULK_COURSES_IMPORTED',
     table_name: 'courses',
     new_values: { created: created.length, errors: errors.length, total: courses.length },
+    ip_address: ip,
   })
 
   return NextResponse.json({ created: created.length, errors, courses: created }, { status: 201 })

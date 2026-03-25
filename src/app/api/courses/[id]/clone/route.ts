@@ -1,12 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// POST /api/courses/[id]/clone — create a draft copy of a course
-export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!['super_admin', 'manager'].includes(profile?.role ?? '')) {
@@ -16,32 +19,36 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const { data: source } = await supabase.from('courses').select('*').eq('id', id).single()
   if (!source) return NextResponse.json({ error: 'Course not found' }, { status: 404 })
 
-  // Calculate default dates: 7 days from now
-  const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7)
+  // Default dates: 7 days from now
+  const nextWeek = new Date()
+  nextWeek.setDate(nextWeek.getDate() + 7)
   const day1 = nextWeek.toISOString().split('T')[0]
-  const day2Date = new Date(nextWeek); day2Date.setDate(day2Date.getDate() + 1)
+  const day2Date = new Date(nextWeek)
+  day2Date.setDate(day2Date.getDate() + 1)
   const day2 = day2Date.toISOString().split('T')[0]
 
-  const { data: clone, error: cloneError } = await supabase.from('courses').insert({
-    title_en: `${source.title_en} (Copy)`,
-    title_ar: `${source.title_ar} (نسخة)`,
-    city_id: source.city_id,
-    venue: source.venue,
-    day1_date: day1,
-    day2_date: day2,
-    trainer_name: source.trainer_name,
-    capacity: source.capacity,
-    course_type: source.course_type,
-    status: 'draft',
-    created_by: user.id,
-  }).select('*, city:cities(*)').single()
+  const { data: clone, error: cloneError } = await supabase
+    .from('courses')
+    .insert({
+      title_en: `${source.title_en} (Copy)`,
+      title_ar: `${source.title_ar} (نسخة)`,
+      city_id: source.city_id,
+      venue: source.venue,
+      day1_date: day1,
+      day2_date: day2,
+      trainer_name: source.trainer_name,
+      capacity: source.capacity,
+      course_type: source.course_type,
+      status: 'draft',
+      created_by: user.id,
+    })
+    .select('*, city:cities(*)')
+    .single()
 
   if (cloneError) return NextResponse.json({ error: cloneError.message }, { status: 500 })
 
-  // Clone checklist items from the source course
-  const { data: sourceItems } = await supabase.from('checklist_items')
-    .select('*').eq('course_id', id)
-
+  // Clone checklist items
+  const { data: sourceItems } = await supabase.from('checklist_items').select('*').eq('course_id', id)
   if (sourceItems && sourceItems.length > 0 && clone) {
     await supabase.from('checklist_items').insert(
       sourceItems.map(item => ({
@@ -58,9 +65,12 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   }
 
   await supabase.from('audit_log').insert({
-    user_id: user.id, action: 'COURSE_CLONED',
-    table_name: 'courses', record_id: clone?.id,
+    user_id: user.id,
+    action: 'COURSE_CLONED',
+    table_name: 'courses',
+    record_id: clone?.id,
     new_values: { cloned_from: id, title_en: clone?.title_en },
+    ip_address: ip,
   })
 
   return NextResponse.json(clone, { status: 201 })

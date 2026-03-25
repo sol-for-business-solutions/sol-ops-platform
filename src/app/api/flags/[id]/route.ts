@@ -6,6 +6,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { status, resolution_notes } = await request.json()
   const updateData: any = { status }
   if (status === 'acknowledged') {
@@ -21,7 +25,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   await supabase.from('audit_log').insert({
     user_id: user.id, action: `FLAG_${status.toUpperCase()}`,
-    table_name: 'flags', record_id: id, new_values: updateData
+    table_name: 'flags', record_id: id, new_values: updateData, ip_address: ip
   })
   return NextResponse.json(data)
 }

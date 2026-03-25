@@ -27,6 +27,10 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { email, password, full_name, full_name_ar, role, phone } = await request.json()
 
   if (!email || !password || !full_name || !role) {
@@ -84,6 +88,7 @@ export async function POST(request: Request) {
     table_name: 'profiles',
     record_id: newUser.user.id,
     new_values: { email, role, full_name },
+    ip_address: ip,
   })
 
   return NextResponse.json(updatedProfile, { status: 201 })

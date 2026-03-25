@@ -98,6 +98,10 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { course_id } = await request.json()
   if (!course_id) return NextResponse.json({ error: 'course_id required' }, { status: 400 })
 
@@ -188,7 +192,8 @@ export async function POST(request: Request) {
   await supabase.from('audit_log').insert({
     user_id: user.id, action: 'CERTIFICATES_GENERATED',
     table_name: 'certificates',
-    new_values: { course_id, generated, skipped, errors: errors.length, eligible: eligible.length, total: trainees.length }
+    new_values: { course_id, generated, skipped, errors: errors.length, eligible: eligible.length, total: trainees.length },
+    ip_address: ip,
   })
 
   return NextResponse.json({ generated, skipped, errors, eligible: eligible.length, total: trainees.length })

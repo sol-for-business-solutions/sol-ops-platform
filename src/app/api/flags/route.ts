@@ -20,6 +20,10 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const body = await request.json()
   const { course_id, severity, category, description, photo_url } = body
   if (!course_id || !severity || !category || !description) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -32,6 +36,6 @@ export async function POST(request: Request) {
       try { await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/notify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ managers, message, sms: severity === 'emergency' }) }) } catch {}
     }
   }
-  await supabase.from('audit_log').insert({ user_id: user.id, action: 'FLAG_RAISED', table_name: 'flags', record_id: data.id, new_values: { severity, category, description } })
+  await supabase.from('audit_log').insert({ user_id: user.id, action: 'FLAG_RAISED', table_name: 'flags', record_id: data.id, new_values: { severity, category, description }, ip_address: ip })
   return NextResponse.json(data, { status: 201 })
 }

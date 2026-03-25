@@ -16,6 +16,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'You cannot modify your own account role or status' }, { status: 400 })
   }
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { role, full_name, full_name_ar, phone, is_active, password } = await request.json()
 
   const updates: Record<string, any> = {}
@@ -47,12 +51,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     table_name: 'profiles',
     record_id: id,
     new_values: updates,
+    ip_address: ip,
   })
 
   return NextResponse.json(data)
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -63,12 +68,16 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
 
   if (id === user.id) return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 })
 
+  const ipDel = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   // Deactivate instead of hard delete (preserves audit trail)
   const adminClient = createAdminClient()
   await adminClient.from('profiles').update({ is_active: false }).eq('id', id)
 
   await supabase.from('audit_log').insert({
-    user_id: user.id, action: 'USER_DEACTIVATED', table_name: 'profiles', record_id: id,
+    user_id: user.id, action: 'USER_DEACTIVATED', table_name: 'profiles', record_id: id, ip_address: ipDel,
   })
 
   return NextResponse.json({ success: true })

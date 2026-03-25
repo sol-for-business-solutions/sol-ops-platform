@@ -8,6 +8,10 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { course_id, session } = await request.json()
   if (!course_id || !session) return NextResponse.json({ error: 'course_id and session required' }, { status: 400 })
   if (!['day1_am', 'day2_am'].includes(session)) {
@@ -73,6 +77,7 @@ export async function POST(request: Request) {
     action: 'ABSENT_SMS_SENT',
     table_name: 'attendance',
     new_values: { course_id, session, notified, errors: errors.length, total_absent: absentTrainees.length },
+    ip_address: ip,
   })
 
   return NextResponse.json({ notified, errors, total_absent: absentTrainees.length })

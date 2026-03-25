@@ -34,6 +34,10 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? null
+
   const { course_id, full_name_en, full_name_ar, national_id_last4, phone, email, consent_given } = await request.json()
 
   if (!course_id || !full_name_en || !full_name_ar || !national_id_last4 || !phone) {
@@ -65,6 +69,7 @@ export async function POST(request: Request) {
     table_name: 'trainees',
     record_id: data.id,
     new_values: { course_id, full_name_en, consent_given: true },
+    ip_address: ip,
   })
 
   return NextResponse.json(data, { status: 201 })

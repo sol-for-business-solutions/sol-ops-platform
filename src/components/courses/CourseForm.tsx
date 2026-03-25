@@ -32,7 +32,13 @@ export function CourseForm({ course }: { course?: Course }) {
     try {
       const url = course ? `/api/courses/${course.id}` : '/api/courses'
       const res = await fetch(url, { method: course ? 'PATCH' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(form) })
-      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed') }
+      if (!res.ok) {
+        const err = await res.json()
+        if (res.status === 409) {
+          throw new Error(`⚠️ Scheduling conflict: ${err.error}`)
+        }
+        throw new Error(err.error || 'Failed to save course')
+      }
       const data = await res.json()
       router.push(`/dashboard/courses/${data.id}`)
     } catch (e: any) { setError(e.message) }
