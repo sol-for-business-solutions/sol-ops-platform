@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// POST /api/courses/bulk
-// Body: { courses: Array<{ title_en, title_ar, city_name, venue, day1_date, trainer_name, capacity?, course_type? }> }
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

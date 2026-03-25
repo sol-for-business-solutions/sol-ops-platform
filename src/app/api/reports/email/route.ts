@@ -40,12 +40,35 @@ export async function POST(request: Request) {
   const openCritical = recentFlags?.filter(f => f.severity === 'critical').length ?? 0
   const dateLabel = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  type Severity = 'emergency' | 'critical' | 'warning' | 'info'
+
+  const COLOR_MAP: Record<Severity, string> = {
+    emergency: '#dc2626',
+    critical: '#ea580c',
+    warning: '#d97706',
+    info: '#2563eb',
+  }
 
   const flagsHtml = recentFlags && recentFlags.length > 0
-    ? recentFlags.map(f => {
-        const color = { emergency: '#dc2626', critical: '#ea580c', warning: '#d97706', info: '#2563eb' }[f.severity] ?? '#888'
-        return `<tr><td style="padding:8px;border-bottom:1px solid #f0f0f0"><span style="color:${color};font-weight:600;text-transform:uppercase;font-size:11px">${f.severity}</span></td><td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px">${(f.course as any)?.title_en ?? '—'}</td><td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#555">${f.description.slice(0, 80)}${f.description.length > 80 ? '…' : ''}</td></tr>`
-      }).join('') : '<tr><td colspan="3" style="padding:12px;color:#999;font-size:13px">No open flags — all clear!</td></tr>'
+  ? recentFlags.map(f => {
+      const severity = f.severity as Severity
+      const color = COLOR_MAP[severity] ?? '#888'
+
+      return `<tr>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0">
+          <span style="color:${color};font-weight:600;text-transform:uppercase;font-size:11px">
+            ${severity}
+          </span>
+        </td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px">
+          ${(f.course as any)?.title_en ?? '—'}
+        </td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#555">
+          ${f.description.slice(0, 80)}${f.description.length > 80 ? '…' : ''}
+        </td>
+      </tr>`
+    }).join('')
+  : '<tr><td colspan="3" style="padding:12px;color:#999;font-size:13px">No open flags — all clear!</td></tr>'
 
   const coursesHtml = activeCourses && activeCourses.length > 0
     ? activeCourses.map(c => `<li style="margin:4px 0;font-size:13px"><strong>${(c.city as any)?.name_en ?? '?'}</strong> — ${c.title_en} <span style="color:#999">(${c.status.replace('_', ' ')})</span></li>`).join('')
