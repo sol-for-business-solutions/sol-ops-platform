@@ -16,7 +16,7 @@ const ROLES: Record<string, { en: string; ar: string; color: string }> = {
 export function Topbar({ profile }: { profile: Profile }) {
   const router = useRouter()
   const supabase = createClient()
-  const { locale, isRTL } = useLocale()
+  const { locale, isRTL, t } = useLocale()
 
   async function signOut() {
     await supabase.auth.signOut()
