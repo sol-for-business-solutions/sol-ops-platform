@@ -6,8 +6,8 @@ import { useLocale } from '@/hooks/useLocale'
 
 interface Props { courseId: string }
 
-export function CourseReport({
-  const { t } = useLocale() courseId }: Props) {
+export function CourseReport({ courseId }: Props) {
+  const { t } = useLocale()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)

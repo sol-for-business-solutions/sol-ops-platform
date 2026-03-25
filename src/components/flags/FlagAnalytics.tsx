@@ -22,8 +22,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   low_turnout: 'Low Turnout', medical_emergency: 'Medical', other: 'Other'
 }
 
-export function FlagAnalytics({
-  const { t } = useLocale() flags }: Props) {
+  export function FlagAnalytics({ flags }: Props) {
+  const { t } = useLocale()
   // Count by severity
   const bySeverity = ['info', 'warning', 'critical', 'emergency'].map(s => ({
     key: s, label: s.charAt(0).toUpperCase() + s.slice(1),
