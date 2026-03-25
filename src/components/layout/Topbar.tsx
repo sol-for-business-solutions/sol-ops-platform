@@ -57,7 +57,7 @@ export function Topbar({ profile }: { profile: Profile }) {
         {/* Sign out */}
         <button onClick={signOut}
           className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-          title={isRTL ? 'تسجيل الخروج' : 'Sign out'}>
+          title={isRTL ? 'تسجيل الخروج' : t('auth.signOut')}>
           <LogOut size={16} />
         </button>
       </div>

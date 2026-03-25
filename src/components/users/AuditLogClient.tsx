@@ -5,6 +5,7 @@ import {
   ChevronDown, ChevronUp, User, Clock, Monitor, Database,
   Download, AlertCircle, X
 } from 'lucide-react'
+import { useLocale } from '@/hooks/useLocale'
 
 interface AuditEntry {
   id: string
@@ -90,6 +91,7 @@ function JsonViewer({ data, label }: { data: Record<string, any> | null; label: 
 }
 
 export function AuditLogClient() {
+  const { t } = useLocale()
   const [data, setData]         = useState<AuditResponse | null>(null)
   const [loading, setLoading]   = useState(true)
   const [page, setPage]         = useState(1)
@@ -144,10 +146,10 @@ export function AuditLogClient() {
     const res = await fetch(`/api/admin/audit-logs?${params}`)
     const json: AuditResponse = await res.json()
     const rows = [
-      ['Timestamp', 'User', 'Role', 'Action', 'Table', 'Record ID', 'IP Address'],
+      [t('auditLog.timestamp'), t('auditLog.user'), 'Role', t('auditLog.action'), 'Table', t('auditLog.recordId'), t('auditLog.ipAddress')],
       ...json.logs.map(l => [
         l.created_at,
-        l.user?.full_name ?? l.user_id ?? 'System',
+        l.user?.full_name ?? l.user_id ?? t('auditLog.systemUser'),
         l.user?.role ?? '',
         l.action,
         l.table_name,
@@ -180,7 +182,7 @@ export function AuditLogClient() {
           <div>
             <h1 className="text-xl font-bold text-gray-900">Audit Log</h1>
             <p className="text-sm text-gray-400">
-              {data ? `${data.total.toLocaleString()} total events` : 'All user activity'}
+              {data ? `${data.total.toLocaleString()} {t('auditLog.allEvents')}` : '{t('auditLog.allActivity')}'}
             </p>
           </div>
         </div>
@@ -207,7 +209,7 @@ export function AuditLogClient() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search actions, tables, record IDs…"
+              placeholder=t('auditLog.searchPlaceholder')
               className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl bg-gray-50 focus:outline-none focus:ring-2"
               style={{ border: '1px solid #e8edf5', '--tw-ring-color': '#142680' } as React.CSSProperties}
             />
@@ -285,10 +287,10 @@ export function AuditLogClient() {
       {data && !loading && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Events',   value: data.total,                                         color: '#142680', bg: '#eff6ff' },
-            { label: 'This Page',      value: data.logs.length,                                   color: '#166534', bg: '#f0fdf4' },
-            { label: 'Unique Actions', value: new Set(data.logs.map(l => l.action)).size,          color: '#92400e', bg: '#fffbeb' },
-            { label: 'Unique Users',   value: new Set(data.logs.map(l => l.user_id).filter(Boolean)).size, color: '#6b21a8', bg: '#faf5ff' },
+            { label: t('auditLog.totalEvents'),   value: data.total,                                         color: '#142680', bg: '#eff6ff' },
+            { label: t('auditLog.thisPage'),      value: data.logs.length,                                   color: '#166534', bg: '#f0fdf4' },
+            { label: t('auditLog.uniqueActions'), value: new Set(data.logs.map(l => l.action)).size,          color: '#92400e', bg: '#fffbeb' },
+            { label: t('auditLog.uniqueUsers'),   value: new Set(data.logs.map(l => l.user_id).filter(Boolean)).size, color: '#6b21a8', bg: '#faf5ff' },
           ].map(s => (
             <div key={s.label} className="sol-card p-4 flex items-center gap-3">
               <div className="flex-1">
@@ -305,7 +307,7 @@ export function AuditLogClient() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <span className="w-8 h-8 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
-            <p className="text-sm text-gray-400">Loading audit logs…</p>
+            <p className="text-sm text-gray-400">{t('common.loading')}</p>
           </div>
         ) : !data || data.logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -324,7 +326,7 @@ export function AuditLogClient() {
             <table className="w-full">
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  {['Timestamp', 'User', 'Action', 'Module', 'Record ID', 'Changes', 'IP Address'].map(h => (
+                  {[t('auditLog.timestamp'), t('auditLog.user'), t('auditLog.action'), t('auditLog.module'), t('auditLog.recordId'), t('auditLog.changes'), t('auditLog.ipAddress')].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>

@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useLocale } from '@/hooks/useLocale'
+mport { useEffect, useState } from 'react'
 
 interface Flag {
   id: string
@@ -21,7 +22,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   low_turnout: 'Low Turnout', medical_emergency: 'Medical', other: 'Other'
 }
 
-export function FlagAnalytics({ flags }: Props) {
+export function FlagAnalytics({
+  const { t } = useLocale() flags }: Props) {
   // Count by severity
   const bySeverity = ['info', 'warning', 'critical', 'emergency'].map(s => ({
     key: s, label: s.charAt(0).toUpperCase() + s.slice(1),

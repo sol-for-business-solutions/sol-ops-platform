@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react'
 import { Spinner } from '@/components/ui/Spinner'
 import { Download, Users, Flag, CheckSquare, Award, FileText } from 'lucide-react'
+import { useLocale } from '@/hooks/useLocale'
 
 interface Props { courseId: string }
 
-export function CourseReport({ courseId }: Props) {
+export function CourseReport({
+  const { t } = useLocale() courseId }: Props) {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)

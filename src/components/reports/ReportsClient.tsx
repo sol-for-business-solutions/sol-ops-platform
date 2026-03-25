@@ -4,6 +4,7 @@ import { CourseReport } from './CourseReport'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import { BarChart2, TrendingUp, Users, Mail, CheckCircle2 } from 'lucide-react'
+import { useLocale } from '@/hooks/useLocale'
 
 interface Course { id: string; title_en: string; status: string; day1_date: string; city: { name_en: string } }
 
@@ -214,7 +215,8 @@ function EmailDigestButton() {
 
 const TABS = ['Course report', 'Coordinator metrics', 'Trends & history']
 
-export function ReportsClient({ courses }: { courses: Course[] }) {
+export function ReportsClient({
+  const { t, locale } = useLocale() courses }: { courses: Course[] }) {
   const [selectedId, setSelectedId] = useState(courses[0]?.id ?? '')
   const [tab, setTab] = useState(0)
   function formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }
@@ -262,7 +264,7 @@ export function ReportsClient({ courses }: { courses: Course[] }) {
                 </div>
               </div>
               <div className="lg:col-span-3">
-                {selectedId ? <CourseReport courseId={selectedId} /> : <EmptyState title="Select a course" />}
+                {selectedId ? <CourseReport courseId={selectedId} /> : <EmptyState title=t('reports.selectCourse') />}
               </div>
             </div>
           )

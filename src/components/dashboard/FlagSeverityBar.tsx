@@ -1,19 +1,24 @@
+'use client'
+import { useLocale } from '@/hooks/useLocale'
+
 interface Stats { info: number; warning: number; critical: number; emergency: number }
-const CFG = [
-  { key: 'emergency' as const, label: 'Emergency', color: '#dc2626', light: '#fef2f2', text: '#991b1b' },
-  { key: 'critical'  as const, label: 'Critical',  color: '#ea580c', light: '#fff7ed', text: '#9a3412' },
-  { key: 'warning'   as const, label: 'Warning',   color: '#d97706', light: '#fffbeb', text: '#92400e' },
-  { key: 'info'      as const, label: 'Info',      color: '#142680', light: '#eff6ff', text: '#1d4ed8' },
-]
+
 export function FlagSeverityBar({ stats, total }: { stats: Stats; total: number }) {
+  const { t } = useLocale()
+  const CFG = [
+    { key: 'emergency' as const, label: t('severity.emergency'), color: '#dc2626', light: '#fef2f2', text: '#991b1b' },
+    { key: 'critical'  as const, label: t('severity.critical'),  color: '#ea580c', light: '#fff7ed', text: '#9a3412' },
+    { key: 'warning'   as const, label: t('severity.warning'),   color: '#d97706', light: '#fffbeb', text: '#92400e' },
+    { key: 'info'      as const, label: t('severity.info'),      color: '#142680', light: '#eff6ff', text: '#1d4ed8' },
+  ]
   if (total === 0) return (
     <div className="flex flex-col items-center py-8">
       <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
         style={{background:'linear-gradient(135deg,#f0fdf4,#dcfce7)'}}>
         <span className="text-2xl">✓</span>
       </div>
-      <p className="text-sm font-bold text-gray-800">All clear</p>
-      <p className="text-xs text-gray-400 mt-1">No open flags at this time</p>
+      <p className="text-sm font-bold text-gray-800">{t('dashboard.allClear')}</p>
+      <p className="text-xs text-gray-400 mt-1">{t('dashboard.noOpenFlags')}</p>
     </div>
   )
   return (

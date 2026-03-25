@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Edit2, PowerOff, Power, X, User, Mail, Lock, Phone, Shield, Eye, EyeOff, Search, RefreshCw } from 'lucide-react'
 import { Spinner } from '@/components/ui/Spinner'
+import { useLocale } from '@/hooks/useLocale'
 
 type UserRole = 'super_admin' | 'manager' | 'coordinator' | 'viewer'
 
@@ -32,6 +33,7 @@ interface ModalState {
 }
 
 export function UserManageClient() {
+  const { t, locale } = useLocale()
   const [users, setUsers] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -109,7 +111,7 @@ export function UserManageClient() {
   }
 
   async function toggleActive(u: UserProfile) {
-    if (!confirm(`${u.is_active ? 'Deactivate' : 'Activate'} user "${u.full_name}"?`)) return
+    if (!confirm(`${u.is_active ? t('users.deactivate') : t('users.activate')} user "${u.full_name}"?`)) return
     const res = await fetch(`/api/admin/users/${u.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -245,7 +247,7 @@ export function UserManageClient() {
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${u.is_active ? 'text-green-700' : 'text-gray-500'}`}
                         style={{ background: u.is_active ? '#f0fdf4' : '#f9fafb', border: `1px solid ${u.is_active ? '#86efac' : '#e5e7eb'}` }}>
                         <span className={`w-1.5 h-1.5 rounded-full ${u.is_active ? 'bg-green-500' : 'bg-gray-400'}`} />
-                        {u.is_active ? 'Active' : 'Inactive'}
+                        {u.is_active ? t('users.active') : t('users.inactive')}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
@@ -285,7 +287,7 @@ export function UserManageClient() {
                   {modal.mode === 'create' ? <Plus size={18} /> : <Edit2 size={16} />}
                 </div>
                 <div>
-                  <h2 className="font-bold text-gray-900">{modal.mode === 'create' ? 'Create new user' : 'Edit user'}</h2>
+                  <h2 className="font-bold text-gray-900">{modal.mode === 'create' ? 'Create new user' : t('users.editUser')}</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{modal.mode === 'create' ? 'User will be able to log in immediately' : `Editing ${modal.user?.email}`}</p>
                 </div>
               </div>
@@ -432,9 +434,9 @@ export function UserManageClient() {
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {modal.mode === 'create' ? 'Creating...' : 'Saving...'}
+                      {modal.mode === 'create' ? 'Creating...' : t('common.saving')}
                     </span>
-                  ) : modal.mode === 'create' ? 'Create user' : 'Save changes'}
+                  ) : modal.mode === 'create' ? t('users.addUser') : 'Save changes'}
                 </button>
               </div>
             </form>

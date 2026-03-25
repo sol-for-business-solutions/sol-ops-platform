@@ -77,7 +77,7 @@ export function Sidebar({ role }: { role: string }) {
         <Link href="/dashboard/settings"
           className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-blue-300 hover:bg-white/10 hover:text-white transition-all', isRTL && 'flex-row-reverse')}>
           <Settings size={17} />
-          <span>{locale === 'ar' ? 'الإعدادات' : 'Settings'}</span>
+          <span>{locale === 'ar' ? 'الإعدادات' : locale === 'ar' ? 'الإعدادات' : 'Settings'}</span>
         </Link>
         <div className="mt-3 mx-1 p-2 rounded-lg bg-white/5 border border-white/10">
           <p className="text-blue-300 text-xs text-center">SOL For Business Solutions</p>
