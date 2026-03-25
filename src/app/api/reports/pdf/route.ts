@@ -151,10 +151,10 @@ export async function GET(request: Request) {
   }
 
   const pdfBytes = await pdfDoc.save()
-  return new Response(pdfBytes, {
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="report-${course_id}.pdf"`,
-    },
-  })
+  return new Response(Buffer.from(pdfBytes), {
+  headers: {
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `attachment; filename="report-${course_id}.pdf"`,
+  },
+})
 }
