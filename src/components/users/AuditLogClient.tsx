@@ -182,7 +182,7 @@ export function AuditLogClient() {
           <div>
             <h1 className="text-xl font-bold text-gray-900">Audit Log</h1>
             <p className="text-sm text-gray-400">
-              {data ? `${data.total.toLocaleString()} {t('auditLog.allEvents')}` : '{t('auditLog.allActivity')}'}
+              {data ? `${data.total.toLocaleString()} ${t('auditLog.allEvents')}` : t('auditLog.allActivity')}
             </p>
           </div>
         </div>
@@ -190,12 +190,12 @@ export function AuditLogClient() {
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
             style={{ border: '1px solid #e8edf5' }}>
-            <Download size={14} /> Export CSV
+            <Download size={14} /> {t('auditLog.exportCSV')}
           </button>
           <button onClick={() => fetchLogs(page)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
             style={{ border: '1px solid #e8edf5' }}>
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> {t('common.refresh')}
           </button>
         </div>
       </div>
@@ -209,7 +209,7 @@ export function AuditLogClient() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder=t('auditLog.searchPlaceholder')
+              placeholder={t('auditLog.searchPlaceholder')}
               className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl bg-gray-50 focus:outline-none focus:ring-2"
               style={{ border: '1px solid #e8edf5', '--tw-ring-color': '#142680' } as React.CSSProperties}
             />
@@ -441,12 +441,12 @@ export function AuditLogClient() {
           <div className="flex items-center justify-between px-5 py-4"
             style={{ borderTop: '1px solid #f1f5f9' }}>
             <p className="text-sm text-gray-500">
-              Showing {((page - 1) * data.limit) + 1}–{Math.min(page * data.limit, data.total)} of <strong>{data.total.toLocaleString()}</strong> events
+              {t('auditLog.showing')} {((page - 1) * data.limit) + 1}–{Math.min(page * data.limit, data.total)} {t('common.of')} <strong>{data.total.toLocaleString()}</strong> {t('auditLog.events')}
             </p>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage(1)} disabled={page === 1}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40 hover:bg-gray-100 transition-colors">
-                First
+                {t('auditLog.first')}
               </button>
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
                 aria-label="Previous page"
@@ -476,7 +476,7 @@ export function AuditLogClient() {
               </button>
               <button onClick={() => setPage(data.pages)} disabled={page === data.pages}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40 hover:bg-gray-100 transition-colors">
-                Last
+                {t('auditLog.last')}
               </button>
             </div>
           </div>

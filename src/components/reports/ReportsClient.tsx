@@ -215,8 +215,8 @@ function EmailDigestButton() {
 
 const TABS = ['Course report', 'Coordinator metrics', 'Trends & history']
 
-export function ReportsClient({
-  const { t, locale } = useLocale() courses }: { courses: Course[] }) {
+export function ReportsClient({ courses }: { courses: Course[] }) {
+  const { t, locale } = useLocale()
   const [selectedId, setSelectedId] = useState(courses[0]?.id ?? '')
   const [tab, setTab] = useState(0)
   function formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }
@@ -264,7 +264,7 @@ export function ReportsClient({
                 </div>
               </div>
               <div className="lg:col-span-3">
-                {selectedId ? <CourseReport courseId={selectedId} /> : <EmptyState title=t('reports.selectCourse') />}
+                {selectedId ? <CourseReport courseId={selectedId} /> : <EmptyState title={t('reports.selectCourse')} />}
               </div>
             </div>
           )

@@ -12,8 +12,8 @@ const SAMPLE_CSV = `title_en,title_ar,city_name,venue,day1_date,trainer_name,cap
 Leadership Excellence,التميز القيادي,Riyadh,Hilton Riyadh,2026-04-10,Ahmed Al-Ghamdi,30,standard
 Project Management,إدارة المشاريع,Jeddah,Marriott Jeddah,2026-04-17,Sara Hassan,25,standard`
 
-export function BulkCourseImportModal({
-  const { t } = useLocale() onClose, onSuccess }: Props) {
+export function BulkCourseImportModal({ onClose, onSuccess }: Props) {
+  const { t } = useLocale()
   const [csv, setCsv] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)

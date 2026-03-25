@@ -105,7 +105,7 @@ export function CheckinClient({ courses, initialCourseId, profile, role }: Props
                           <button key={day} onClick={() => setActiveDay(day)} className={`flex-1 p-3 rounded-xl border-2 text-sm font-medium transition-all text-left ${activeDay === day ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'}`}>
                             <p>{t('checkin.day')} {day}</p>
                             <p className={`text-xs font-normal mt-0.5 ${activeDay === day ? 'text-gray-300' : 'text-gray-400'}`}>{formatDate(dateStr)}{dayStatus === 'today' && <span className="ml-1 text-green-400">· {t('common.today')}</span>}</p>
-                            {checkinStatus && <p className={`text-xs mt-1 ${activeDay === day ? 'text-green-300' : 'text-green-600'}`}>{(checkinStatus as any).checked_in ? `✓ {t('checkin.checkedIn')}${(checkinStatus as any).checked_out ? ' & {t('checkin.checkedOut').toLowerCase()}' : ''}` : t('checkin.notCheckedIn')}</p>}
+                            {checkinStatus && <p className={`text-xs mt-1 ${activeDay === day ? 'text-green-300' : 'text-green-600'}`}>{(checkinStatus as any).checked_in ? `✓ ${t('checkin.checkedIn')}${(checkinStatus as any).checked_out ? ` & ${t('checkin.checkedOut').toLowerCase()}` : ''}` : t('checkin.notCheckedIn')}</p>}
                           </button>
                         )
                       })}

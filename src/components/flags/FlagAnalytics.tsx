@@ -1,6 +1,6 @@
 'use client'
 import { useLocale } from '@/hooks/useLocale'
-mport { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Flag {
   id: string
