@@ -10,7 +10,7 @@ export default async function FlagsPage({ searchParams }: { searchParams: Promis
   if (!profile) redirect('/login')
 
   let query = supabase.from('courses')
-    .select('id, title_en, status')
+    .select('id, title_en, title_ar, status')
     .in('status', ['scheduled', 'in_progress', 'completed'])
     .order('day1_date', { ascending: false })
 
