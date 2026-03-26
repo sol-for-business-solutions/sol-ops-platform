@@ -1,36 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=IBM+Plex+Arabic:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/forms";
 
+/* ── Fonts loaded via <link> in layout.tsx ──────────────────────
+   Montserrat  → English UI
+   Tajawal     → Arabic UI (designed for Arabic, reads at any size)
+────────────────────────────────────────────────────────────────── */
+
 :root {
-  --sol-navy:    #142680;
-  --sol-blue:    #2B35FF;
-  --sol-cyan:    #89e3fd;
-  --sol-gray:    #e8e8e8;
-  --sol-dark:    #10120f;
+  --sol-navy:     #142680;
+  --sol-blue:     #2B35FF;
+  --sol-cyan:     #89e3fd;
+  --sol-gray:     #e8e8e8;
+  --sol-dark:     #10120f;
   --sol-gradient: linear-gradient(135deg, #142680 0%, #1e3aaa 40%, #2B35FF 100%);
+
+  /* Font stacks */
+  --font-en: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-ar: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
 
+/* English (LTR) default */
 body {
-  font-family: 'Montserrat', 'Segoe UI', sans-serif;
+  font-family: var(--font-en);
   background: #f5f6fa;
   color: #10120f;
 }
 
-[dir="rtl"] body, [dir="rtl"] * {
-  font-family: 'IBM Plex Arabic', 'Segoe UI', 'Noto Sans Arabic', Arial, sans-serif;
+/* Arabic (RTL) — switch to Tajawal across the entire app */
+[dir="rtl"] body,
+[dir="rtl"] * {
+  font-family: var(--font-ar) !important;
+  letter-spacing: 0 !important;   /* Tajawal doesn't need letter-spacing */
 }
+
+/* Keep number/email inputs LTR even in RTL mode */
 [dir="rtl"] input[type="number"],
 [dir="rtl"] input[type="tel"],
-[dir="rtl"] input[type="email"] { direction: ltr; text-align: left; }
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="url"]  { direction: ltr; text-align: left; }
 
+/* Tajawal looks best slightly larger — boost line-height for Arabic */
+[dir="rtl"] p,
+[dir="rtl"] span,
+[dir="rtl"] label,
+[dir="rtl"] button,
+[dir="rtl"] td,
+[dir="rtl"] th { line-height: 1.8; }
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #c5cae9; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #142680; }
 
+/* ── Utility classes ─────────────────────────────────────────── */
 .sol-btn-primary {
   background: var(--sol-gradient);
   color: white;
@@ -48,6 +73,12 @@ body {
   border-radius: 12px;
   transition: all 0.2s;
 }
-.sol-card:hover { border-color: #c5cae9; box-shadow: 0 4px 20px rgba(20,38,128,0.08); }
+.sol-card:hover {
+  border-color: #c5cae9;
+  box-shadow: 0 4px 20px rgba(20,38,128,0.08);
+}
 
 .stat-card-accent { border-top: 3px solid; }
+
+/* ── RTL layout helpers ──────────────────────────────────────── */
+[dir="rtl"] .ltr-force { direction: ltr; text-align: left; }

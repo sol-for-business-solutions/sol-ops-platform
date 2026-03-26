@@ -3,11 +3,22 @@ import { useLocale } from '@/hooks/useLocale'
 
 export function LanguageToggle() {
   const { locale, setLocale } = useLocale()
+  const isAr = locale === 'ar'
+
   return (
-    <button onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all"
-      style={{background:'#f5f6fa',border:'1px solid #e8edf5',color:'#142680'}}>
-      {locale === 'en' ? <><span>🇸🇦</span><span>عربي</span></> : <><span>🇬🇧</span><span>EN</span></>}
+    <button
+      onClick={() => setLocale(isAr ? 'en' : 'ar')}
+      aria-label={isAr ? 'Switch to English' : 'التبديل إلى العربية'}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:shadow-sm"
+      style={{
+        background: '#f0f4ff',
+        border: '1px solid #dbe4ff',
+        color: '#142680',
+      }}>
+      {isAr
+        ? <><span className="text-base leading-none">🇬🇧</span><span>EN</span></>
+        : <><span className="text-base leading-none">🇸🇦</span><span>عربي</span></>
+      }
     </button>
   )
 }
