@@ -152,7 +152,14 @@ export function AttendanceClient({ courses, initialCourseId, role }: Props) {
                     )}
                     {genResult && (
                       <div className={`p-3 rounded-lg text-sm ${genResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-                        {genResult.error ? genResult.error : `✓ Generated ${genResult.generated} ${genResult.generated !== 1 ? t('certificates.title').toLowerCase() : ''}${genResult.skipped > 0 ? ` · ${genResult.skipped} already existed` : ''}`}
+                        {genResult.error
+                          ? genResult.error
+                          : genResult.generated > 0
+                            ? `✓ Generated ${genResult.generated} certificate${genResult.generated !== 1 ? 's' : ''}${genResult.skipped > 0 ? ` · ${genResult.skipped} already existed` : ''}`
+                            : genResult.skipped > 0
+                              ? `✓ ${genResult.skipped} certificate${genResult.skipped !== 1 ? 's' : ''} already generated — visit the Certificates page to download`
+                              : `No eligible trainees found`
+                        }
                       </div>
                     )}
                   </div>
