@@ -151,17 +151,30 @@ export function AttendanceClient({ courses, initialCourseId, role }: Props) {
                       </div>
                     )}
                     {genResult && (
-                      <div className={`p-3 rounded-lg text-sm ${genResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-                        {genResult.error
-                          ? genResult.error
-                          : genResult.generated > 0
-                            ? `✓ Generated ${genResult.generated} certificate${genResult.generated !== 1 ? 's' : ''}${genResult.skipped > 0 ? ` · ${genResult.skipped} already existed` : ''}`
-                            : genResult.skipped > 0
-                              ? `✓ ${genResult.skipped} certificate${genResult.skipped !== 1 ? 's' : ''} already generated — visit the Certificates page to download`
-                              : `No eligible trainees found`
-                        }
-                      </div>
-                    )}
+                    <div className={`p-3 rounded-lg text-sm ${
+                      genResult.error || genResult.errors?.length > 0
+                        ? 'bg-red-50 text-red-700 border border-red-200'
+                        : 'bg-green-50 text-green-700 border border-green-200'
+                    }`}>
+                      {genResult.error
+                        ? genResult.error
+                        : genResult.generated > 0
+                          ? `✓ Generated ${genResult.generated} certificate${genResult.generated !== 1 ? 's' : ''}${genResult.skipped > 0 ? ` · ${genResult.skipped} already existed` : ''}`
+                          : genResult.skipped > 0
+                            ? `✓ ${genResult.skipped} certificate${genResult.skipped !== 1 ? 's' : ''} already exist — visit the Certificates page to download`
+                            : `No certificates generated`
+                      }
+                      {/* Show per-trainee upload errors */}
+                      {genResult.errors?.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          <p className="font-semibold">Upload errors:</p>
+                          {genResult.errors.map((e: any, i: number) => (
+                            <p key={i} className="text-xs opacity-80">• {e.trainee}: {e.error}</p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   </div>
                 )}
               </>
