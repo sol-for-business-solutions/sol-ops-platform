@@ -8,7 +8,7 @@ interface Props { courses: { id: string; title_en: string; title_ar: string }[];
 
 export function RaiseFlagModal({ courses, initialCourseId, onClose, onSuccess }: Props) {
   const { t, locale } = useLocale()
-  const [courseId, setCourseId] = useState(initialCourseId ?? courses[0]?.id ?? '')
+  const [courseId, setCourseId] = useState(initialCourseId || courses[0]?.id || '')
   const [severity, setSeverity] = useState<FlagSeverity>('warning')
   const [category, setCategory] = useState<FlagCategory>('other')
   const [description, setDescription] = useState('')
