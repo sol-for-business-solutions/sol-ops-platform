@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import nodemailer from 'nodemailer'
 
 // FR-706: Scheduled/on-demand report delivery via email
 // POST body: { frequency?: 'daily' | 'weekly'; recipient_emails?: string[] }
@@ -15,8 +16,9 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}))
   const recipientEmails: string[] = body.recipient_emails ?? [profile?.email].filter(Boolean)
-  const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) return NextResponse.json({ error: 'Email not configured (RESEND_API_KEY missing)' }, { status: 503 })
+  const gmailUser = process.env.GMAIL_USER
+  const gmailKey = process.env.GMAIL_APP_KEY
+  if (!gmailUser || !gmailKey) return NextResponse.json({ error: 'Email not configured (GMAIL_USER or GMAIL_APP_KEY missing)' }, { status: 503 })
 
   // Build summary stats
   const today = new Date()
@@ -118,21 +120,21 @@ export async function POST(request: Request) {
   </div>
 </div>`
 
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmailUser,
+      pass: gmailKey,
+    },
+  })
+
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: 'SOL Operations <digest@sol.sa>',
-        to: recipientEmails,
-        subject: `SOL Ops Digest — ${dateLabel}`,
-        html,
-      }),
+    await transporter.sendMail({
+      from: `"SOL Operations" <${gmailUser}>`,
+      to: recipientEmails.join(','),
+      subject: `SOL Ops Digest — ${dateLabel}`,
+      html,
     })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      return NextResponse.json({ error: err.message ?? 'Email send failed' }, { status: 500 })
-    }
     return NextResponse.json({ sent: true, recipients: recipientEmails.length })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
