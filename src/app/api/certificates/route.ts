@@ -189,25 +189,19 @@ export async function POST(request: Request) {
       }).select().single()
 
       // Send certificate via email if trainee has email
-      if (trainee.email && cert && process.env.RESEND_API_KEY) {
-        fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            from: 'SOL Operations <certificates@sol.sa>',
-            to: [trainee.email],
-            subject: `Your Certificate — ${course.title_en}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-              <h2 style="color:#142680">Certificate of Completion</h2>
-              <p>Dear ${trainee.full_name_en},</p>
-              <p>Congratulations on successfully completing <strong>${course.title_en}</strong>.</p>
-              <p>Your certificate is ready. You can verify it at any time using the link below:</p>
-              <p><a href="${appUrl}/verify/${verificationCode}" style="background:#142680;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">Verify Certificate →</a></p>
-              <p style="color:#999;font-size:12px;margin-top:24px">Verification Code: ${verificationCode}</p>
-              <p style="color:#999;font-size:12px">SOL For Business Solution</p>
-            </div>`,
-            attachments: cert.pdf_url ? [{ filename: `certificate-${verificationCode}.pdf`, path: cert.pdf_url }] : [],
-          }),
+      if (trainee.email && cert && process.env.GMAIL_USER && process.env.GMAIL_APP_KEY) {
+        const nodemailer = await import('nodemailer')
+        const transporter = nodemailer.default.createTransport({
+          service: 'gmail',
+          auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_KEY },
+        })
+        transporter.sendMail({
+          from: `"SOL Operations" <${process.env.GMAIL_USER}>`,
+          to: trainee.email,
+          subject: `Your Certificate — ${course.title_en}`,
+          html: `<p>Dear ${trainee.full_name_en}, your certificate for <strong>${course.title_en}</strong> is ready.</p>
+                <p>Verification code: ${verificationCode}</p>
+                <p>Verify at: ${appUrl}/verify/${verificationCode}</p>`,
         }).catch(() => {})
       }
 

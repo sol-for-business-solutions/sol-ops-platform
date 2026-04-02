@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-
+import nodemailer from 'nodemailer'
 // POST /api/notify
 // Body: { managers: [{email, phone, full_name}], message: string, sms?: boolean }
 export async function POST(request: Request) {
@@ -7,37 +7,29 @@ export async function POST(request: Request) {
   const results: { email?: boolean; sms?: boolean; errors: string[] } = { errors: [] }
 
   // ── Email via Resend ─────────────────────────────────────────────────────
-  const resendKey = process.env.RESEND_API_KEY
-  if (resendKey) {
-    const emails = (managers as any[]).filter((m) => m.email).map((m) => m.email)
-    if (emails.length > 0) {
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            from: 'SOL Operations <noreply@sol.sa>',
-            to: emails,
-            subject: 'SOL Ops Alert — Action Required',
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-              <h2 style="color:#142680;margin:0 0 16px">⚠️ SOL Operations Alert</h2>
-              <p style="color:#374151;line-height:1.6">${message}</p>
-              <p style="margin-top:24px">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/flags"
-                   style="background:#142680;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600">
-                  View in Dashboard →
-                </a>
-              </p>
-              <p style="color:#9ca3af;font-size:12px;margin-top:32px">SOL For Business Solution — Operations Platform</p>
-            </div>`,
-          }),
-        })
-        results.email = true
-      } catch (e: any) {
-        results.errors.push(`Email: ${e.message}`)
-      }
-    }
+  
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,      // your Gmail address
+    pass: process.env.GMAIL_APP_KEY,   // 16-char app password
+  },
+})
+
+const emails = (managers as any[]).filter(m => m.email).map(m => m.email)
+if (emails.length > 0) {
+  try {
+    await transporter.sendMail({
+      from: `"SOL Operations" <${process.env.GMAIL_USER}>`,
+      to: emails.join(','),
+      subject: 'SOL Ops Alert — Action Required',
+      html: `<p>${message}</p>`,
+    })
+    results.email = true
+  } catch (e: any) {
+    results.errors.push(`Email: ${e.message}`)
   }
+}
 
   // ── SMS via Unifonic (FR-304 / NFR) ─────────────────────────────────────
   const unifonicSid = process.env.UNIFONIC_APP_SID
