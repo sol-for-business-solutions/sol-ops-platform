@@ -3,6 +3,21 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
+import fs from 'fs'
+import path from 'path'
+
+// Arabic font files bundled via @fontsource/noto-sans-arabic (no HTTP fetch at runtime)
+function getArabicFontBytes(weight: '400' | '700'): Buffer {
+  const fontPath = path.join(
+    process.cwd(),
+    'node_modules',
+    '@fontsource',
+    'noto-sans-arabic',
+    'files',
+    `noto-sans-arabic-arabic-${weight}-normal.woff`
+  )
+  return fs.readFileSync(fontPath)
+}
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -18,24 +33,17 @@ function formatCertDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-// Fetch Noto Naskh Arabic font — supports Arabic + Latin in one font
-async function loadArabicFont(): Promise<ArrayBuffer> {
-  const url =
-    'https://fonts.gstatic.com/s/notonaskharabic/v33/RrQ5bpV-9Dd1b1OAGA6M9PkyDuVBePeKNaxcsss0Y7bwvc9zRjBxho0x_X8.woff2'
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Failed to fetch Arabic font: ${res.status}`)
-  return res.arrayBuffer()
-}
-
 async function generatePDF(trainee: any, course: any, verificationCode: string): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
   pdfDoc.registerFontkit(fontkit)
 
-  // Embed Arabic-capable Unicode font for all Arabic text
-  const arabicFontBytes = await loadArabicFont()
-  const arabicFont = await pdfDoc.embedFont(arabicFontBytes)
+  // Embed Arabic fonts from local node_modules (no network call)
+  const arabicRegularBytes = getArabicFontBytes('400')
+  const arabicBoldBytes    = getArabicFontBytes('700')
+  const arabicRegular      = await pdfDoc.embedFont(arabicRegularBytes)
+  const arabicBold         = await pdfDoc.embedFont(arabicBoldBytes)
 
-  // Keep Helvetica for pure Latin/English text
+  // Helvetica for pure Latin/English (smaller, no subset needed)
   const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
@@ -49,34 +57,34 @@ async function generatePDF(trainee: any, course: any, verificationCode: string):
   // Bottom border bar
   page.drawRectangle({ x: 0, y: 0, width, height: 8, color: rgb(0.07, 0.07, 0.07) })
   // Left accent bar
-  page.drawRectangle({ x: 48, y: 40, width: 4, height: height - 80, color: rgb(0.07, 0.07, 0.07) })
+  page.drawRectangle({ x: 48, y: 40, width: 4, height: height - 80, color: rgb(0.08, 0.15, 0.5) })
 
-  // Header — English (Helvetica)
-  page.drawText('SOL FOR BUSINESS SOLUTION', { x: 72, y: height - 72, size: 11, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
+  // Header — English
+  page.drawText('SOL FOR BUSINESS SOLUTION', { x: 72, y: height - 72, size: 11, font: fontBold, color: rgb(0.08, 0.15, 0.5) })
   page.drawText('CERTIFICATE OF COMPLETION', { x: 72, y: height - 120, size: 28, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
-  // Arabic subtitle — use arabicFont
-  page.drawText('شهادة إتمام الدورة التدريبية', { x: 72, y: height - 150, size: 14, font: arabicFont, color: rgb(0.45, 0.45, 0.45) })
+  // Arabic subtitle
+  page.drawText('شهادة إتمام الدورة التدريبية', { x: 72, y: height - 150, size: 14, font: arabicRegular, color: rgb(0.45, 0.45, 0.45) })
 
   // Divider
   page.drawLine({ start: { x: 72, y: height - 170 }, end: { x: width - 72, y: height - 170 }, thickness: 0.5, color: rgb(0.85, 0.85, 0.85) })
 
-  // Recipient — English name with Helvetica
+  // Recipient — English name
   page.drawText('This certifies that', { x: 72, y: height - 210, size: 13, font: fontRegular, color: rgb(0.4, 0.4, 0.4) })
   const nameEn = trainee.full_name_en
   const nameFontSize = nameEn.length > 30 ? 26 : 32
   page.drawText(nameEn, { x: 72, y: height - 255, size: nameFontSize, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
-  // Arabic name — use arabicFont
+  // Arabic name
   if (trainee.full_name_ar) {
-    page.drawText(trainee.full_name_ar, { x: 72, y: height - 285, size: 16, font: arabicFont, color: rgb(0.45, 0.45, 0.45) })
+    page.drawText(trainee.full_name_ar, { x: 72, y: height - 285, size: 16, font: arabicRegular, color: rgb(0.45, 0.45, 0.45) })
   }
 
-  // Course — English title with Helvetica
+  // Course — English title
   page.drawText('has successfully completed', { x: 72, y: height - 325, size: 13, font: fontRegular, color: rgb(0.4, 0.4, 0.4) })
   const titleSize = course.title_en.length > 40 ? 16 : 20
   page.drawText(course.title_en, { x: 72, y: height - 360, size: titleSize, font: fontBold, color: rgb(0.07, 0.07, 0.07) })
-  // Arabic course title — use arabicFont
+  // Arabic course title
   if (course.title_ar) {
-    page.drawText(course.title_ar, { x: 72, y: height - 385, size: 13, font: arabicFont, color: rgb(0.45, 0.45, 0.45) })
+    page.drawText(course.title_ar, { x: 72, y: height - 385, size: 13, font: arabicRegular, color: rgb(0.45, 0.45, 0.45) })
   }
 
   const cityName = course.city?.name_en ?? ''
